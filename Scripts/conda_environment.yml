@@ -1,0 +1,35 @@
+name: tb-assemble
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bcftools
+  - busco
+  - bwa
+  - fastqc
+  - gatk4
+  - iqtree
+  - mafft
+  - openjdk
+  - pip
+  - prokka
+  - python>=3.7
+  - quast
+  - r-ape
+  - r-base
+  - r-devtools
+  - r-doMC
+  - r-foreach
+  - r-ggplot2
+  - r-mclust
+  - r-optparse
+  - r-phytools
+  - r-seqinr
+  - r-stringr
+  - samtools
+  - snakemake
+  - snakemake-executor-plugin-slurm
+  - spades
+  - tb-profiler
+  - trimmomatic

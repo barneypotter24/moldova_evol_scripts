@@ -1,0 +1,202 @@
+# Snakefile_align_combined
+"""
+Modified version of Snakefile_aligned that accounts for COMBINED samples.
+"""
+
+PROJECT_DIR="Batch3"
+
+SAMPLES_TO_RUN = list(config["samples"].values())
+
+rule all:
+    input:
+        bwa_idx="ReferenceStrains/H37Rv.fasta.bwt",
+        st_idx="ReferenceStrains/H37Rv.fasta.fai",
+        gatk_idx="ReferenceStrains/H37Rv.dict",
+        bam=expand(f"{PROJECT_DIR}/BAM/{{sample}}.bam", sample=SAMPLES_TO_RUN),
+        vcf=expand(f"{PROJECT_DIR}/VCF/{{sample}}.vcf", sample=SAMPLES_TO_RUN),
+        flagstat=expand(f"{PROJECT_DIR}/Stats/{{sample}}_flagstat.txt", sample=SAMPLES_TO_RUN),
+        #tbprof=expand(f"{PROJECT_DIR}/TBProfiler/{{sample}}.results.json", sample=SAMPLES_TO_RUN)
+
+
+##### Prerequisite indices #####
+rule bwa_index_reference:
+    conda: "tb-assemble"
+    input:
+        "ReferenceStrains/H37Rv.fasta"
+    output:
+        "ReferenceStrains/H37Rv.fasta.bwt"
+    resources:
+        mem_mb=3000
+    log:
+        "slurm_logs/bwa_index.log"
+    shell:
+        """
+        bwa index {input}
+        """
+
+rule samtools_index_reference:
+    conda: "tb-assemble"
+    input:
+        "ReferenceStrains/H37Rv.fasta"
+    output:
+        "ReferenceStrains/H37Rv.fasta.fai"
+    resources:
+        mem_mb=6000
+    log:
+        "slurm_logs/samtools_index.log"
+    shell:
+        """
+        samtools faidx {input}
+        """
+
+rule gatk_index_reference:
+    conda: "tb-assemble"
+    input:
+        "ReferenceStrains/H37Rv.fasta"
+    output:
+        "ReferenceStrains/H37Rv.dict"
+    resources:
+        time=60,
+        mem_mb=9000
+    log:
+        "slurm_logs/gatk_index.log"
+    shell:
+        """
+        gatk CreateSequenceDictionary -R {input}
+        """
+
+##### From align.sh #####
+rule bwa_mem:
+    conda: "tb-assemble"
+    input:
+        index="ReferenceStrains/H37Rv.fasta.bwt",
+        ref="ReferenceStrains/H37Rv.fasta",
+        fq1=f"{PROJECT_DIR}/FASTQ/{{sample}}_R1.fastq.gz",
+        fq2=f"{PROJECT_DIR}/FASTQ/{{sample}}_R2.fastq.gz",
+    output:
+        sam=temp("{sample}.sam")
+    threads: 32
+    resources:
+        runtime=180 # three times what the test run took
+    log:
+        "slurm_logs/bwa_mem_{sample}.log"
+    shell:
+        """
+        bwa mem -t {threads} {input.ref} {input.fq1} {input.fq2} > {output}
+        """
+
+rule samtools_view:
+    conda: "tb-assemble"
+    input:
+        sam=rules.bwa_mem.output.sam
+    output:
+        pbam=temp("{sample}_pre.bam")
+    log:
+        "slurm_logs/samtools_view_{sample}.log"
+    shell:
+        """
+        samtools view -bS {input.sam} > {output.pbam}
+        """
+
+rule samtools_sort:
+    conda: "tb-assemble"
+    input:
+        pbam=rules.samtools_view.output.pbam,
+    output:
+        sbam=temp("{sample}_sort.bam")
+    threads: 32
+    log:
+        "slurm_logs/samtools_sort_{sample}.log"
+    shell:
+        """
+        samtools sort -@ {threads} -o {output.sbam} {input.pbam}
+        """
+
+rule samtools_index_bam:
+    conda: "tb-assemble"
+    input:
+        sortbam=rules.samtools_sort.output.sbam,
+    output:
+        bai=temp("{sample}_sort.bam.bai")
+    log:
+        "slurm_logs/samtools_index_{sample}.log"
+    shell:
+        """
+        samtools index {input.sortbam}
+        """
+
+rule gatk_aorrg:
+    conda: "tb-assemble"
+    input:
+        bam=rules.samtools_sort.output.sbam,
+        bai=rules.samtools_index_bam.output.bai
+    output:
+        bam=f"{PROJECT_DIR}/BAM/{{sample}}.bam"
+    resources:
+        runtime=60
+    log:
+        "slurm_logs/gatk_aorrg_{sample}.log"
+    shell:
+        """
+        gatk AddOrReplaceReadGroups \
+            -I {input.bam} \
+            -O {output} \
+            -SO coordinate \
+            -ID foo \
+            -LB bar \
+            -PL illumina \
+            -PU unit1 \
+            -SM {wildcards.sample} \
+            --CREATE_INDEX TRUE
+        """
+
+rule gatk_hc:
+    conda: "tb-assemble"
+    input:
+        bam=rules.gatk_aorrg.output.bam,
+        ref="ReferenceStrains/H37Rv.fasta"
+    output:
+        vcf=f"{PROJECT_DIR}/VCF/{{sample}}.vcf"
+    threads: 32
+    log:
+        "slurm_logs/gatk_hc_{sample}.log"
+    shell:
+        """
+        gatk HaplotypeCaller \
+            --native-pair-hmm-threads {threads} \
+            -R {input.ref} \
+            -I {input.bam} \
+            --max-reads-per-alignment-start 0 \
+            --emit-ref-confidence GVCF \
+            -O {output.vcf}
+        """
+
+rule samtools_flagstat:
+    conda: "tb-assemble"
+    input:
+        bam=rules.gatk_aorrg.output.bam,
+    output:
+        fst=f"{PROJECT_DIR}/Stats/{{sample}}_flagstat.txt"
+    log:
+        "slurm_logs/samtools_flagstat_{sample}.log"
+    shell:
+        """
+        samtools flagstat {input.bam} > {output.fst}
+        """
+
+rule tb_profiler_profile:
+    conda: "tb-assemble"
+    input:
+        bam=rules.gatk_aorrg.output.bam,
+    output:
+        tbp=f"{PROJECT_DIR}/TBProfiler/{{sample}}.results.json"
+    params:
+        fstem=f"{PROJECT_DIR}/TBProfiler/{{sample}}"
+    log:
+        "slurm_logs/tb_profiler_profile_{sample}.log"
+    shell:
+        """
+        tb-profiler profile -a {input.bam}
+        """
+
+        """

@@ -1,1 +1,10 @@
-metadata/
+private_metadata/
+FASTQ/
+BAM/
+VCF/
+TBProfiler/
+*.flagstat.txt
+Stats/
+SNP_alignment/
+ReferenceStrains/
+tbdb/

@@ -1,5 +1,4 @@
 import os
-from tqdm import tqdm
 
 if __name__ == "__main__":
     vcf_dir = "VCF"
@@ -18,8 +17,8 @@ if __name__ == "__main__":
             sep = "_L00"
             fbase = fname.split(sep)[0]
             new_fname = f"{vcf_dir}/{fbase}{extension}"
-            # print(f"Renaming {vcf_dir}/{fname} to {new_fname}")
-            # os.rename(f"{vcf_dir}/{fname}", new_fname)
+            print(f"Renaming {vcf_dir}/{fname} to {new_fname}")
+            os.rename(f"{vcf_dir}/{fname}", new_fname)
             rename_count += 1
         else:
             print(f"Skipping file without lane info: {fname}")

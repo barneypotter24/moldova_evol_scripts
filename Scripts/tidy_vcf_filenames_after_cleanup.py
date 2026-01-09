@@ -13,12 +13,12 @@ if __name__ == "__main__":
             print(f"Skipping non-VCF file: {fname}")
             continue
 
-        if "_L00" in fname:
-            sep = "_L00"
+        if "_f" in fname:
+            sep = "_f"
             fbase = fname.split(sep)[0]
             new_fname = f"{vcf_dir}/{fbase}{extension}"
             print(f"Renaming {vcf_dir}/{fname} to {new_fname}")
-            os.rename(f"{vcf_dir}/{fname}", new_fname)
+            # os.rename(f"{vcf_dir}/{fname}", new_fname)
             rename_count += 1
         else:
             print(f"Skipping file without lane info: {fname}")

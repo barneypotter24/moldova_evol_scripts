@@ -69,6 +69,17 @@ if __name__ == "__main__":
 
     print(f"Finished creating {config_index} config files.")
 
+    print("Creating full config files...")
+    for i, bset in enumerate(batch_sets):
+        cfg_fname = f"{config_dir}/BATCH_{i}_FULL_CONFIG.yaml"
+        print("Creating full config file:", cfg_fname)
+        with open(cfg_fname, "w") as o:
+            o.write(f"batch: \"{i}\"\n")
+            o.write("samples:\n")
+            for k, s in enumerate(bset):
+                line = f"    {k}: \"{s}\"\n"
+                o.write(line)
+
     print("Validating batch sample sets...")
     overlap = batch_sets[0] & batch_sets[1] & batch_sets[2] & batch_sets[3]
     if len(overlap) > 0:

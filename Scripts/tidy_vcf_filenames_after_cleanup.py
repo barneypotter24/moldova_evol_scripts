@@ -5,7 +5,7 @@ if __name__ == "__main__":
     vcf_dir = "VCF"
 
     rename_count = 0
-    for fname in tqdm(os.listdir(vcf_dir)):
+    for fname in os.listdir(vcf_dir):
         if fname.endswith(".vcf"):
             extension = ".vcf"
         elif fname.endswith(".vcf.idx"):

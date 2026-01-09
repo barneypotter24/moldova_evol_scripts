@@ -200,5 +200,3 @@ rule tb_profiler_profile:
         """
         tb-profiler profile -a {input.bam}
         """
-
-        """

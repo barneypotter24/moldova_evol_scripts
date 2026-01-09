@@ -1,0 +1,25 @@
+import os
+from tqdm import tqdm
+
+if __name__ == "__main__":
+    vcf_dir = "VCF"
+
+    rename_count = 0
+    for fname in tqdm(os.listdir(vcf_dir)):
+        if fname.endswith(".vcf"):
+            extension = ".vcf"
+        elif fname.endswith(".vcf.idx"):
+            extension = ".vcf.idx"
+        else:
+            print(f"Skipping non-VCF file: {fname}")
+            continue
+
+        if "_L00" in fname:
+            sep = "_L00"
+            fbase = fname.split(sep)[0]
+            new_fname = f"{vcf_dir}/{fbase}{extension}"
+            print(f"Renaming {fname} to {new_fname}")
+            # os.rename(f"{vcf_dir}/{fname}", new_fname)
+            rename_count += 1
+
+    print(f"Total files renamed: {rename_count}")

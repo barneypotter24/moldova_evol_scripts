@@ -14,7 +14,7 @@ if __name__ == "__main__":
     batch_samples = []
 
     for b in range(nbatches):
-        batch_dir = os.path.join(fastq_dir, f"batch{b}")
+        batch_dir = os.path.join(fastq_dir, f"{b}")
         print(f"Processing batch directory: {batch_dir}")
         b_seqs = set()
         for fname in os.listdir(batch_dir):

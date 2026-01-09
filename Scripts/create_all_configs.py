@@ -77,3 +77,7 @@ if __name__ == "__main__":
             print(s)
     else:
         print("No overlapping samples found between batches.")
+
+    print("Full batch sizes:")
+    for i, bset in enumerate(batch_sets):
+        print(f"\tBatch {i}: {len(bset)} samples")

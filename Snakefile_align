@@ -3,8 +3,9 @@
 Main Snakefile for alignment of FASTQs for moldova_evol.
 """
 
-PROJECT_DIR="Batch3"
-
+BATCH_FASTQ_DIR = config["batch"]
+print(f"BATCH_FASTQ_DIR: {BATCH_FASTQ_DIR}")
+sys.exit()
 SAMPLES_TO_RUN = list(config["samples"].values())
 print(SAMPLES_TO_RUN)
 
@@ -14,10 +15,10 @@ rule all:
         bwa_idx="ReferenceStrains/H37Rv.fasta.bwt",
         st_idx="ReferenceStrains/H37Rv.fasta.fai",
         gatk_idx="ReferenceStrains/H37Rv.dict",
-        bam=expand(f"{PROJECT_DIR}/BAM/{{sample}}.bam", sample=SAMPLES_TO_RUN),
-        vcf=expand(f"{PROJECT_DIR}/VCF/{{sample}}.vcf", sample=SAMPLES_TO_RUN),
-        flagstat=expand(f"{PROJECT_DIR}/Stats/{{sample}}_flagstat.txt", sample=SAMPLES_TO_RUN),
-        #tbprof=expand(f"{PROJECT_DIR}/TBProfiler/{{sample}}.results.json", sample=SAMPLES_TO_RUN)
+        bam=expand("BAM/{sample}.bam", sample=SAMPLES_TO_RUN),
+        vcf=expand("VCF/{sample}.vcf", sample=SAMPLES_TO_RUN),
+        flagstat=expand("Stats/{sample}_flagstat.txt", sample=SAMPLES_TO_RUN),
+        #tbprof=expand("TBProfiler/{sample}.results.json", sample=SAMPLES_TO_RUN)
 
 
 ##### Prerequisite indices #####
@@ -73,8 +74,8 @@ rule bwa_mem:
     input:
         index="ReferenceStrains/H37Rv.fasta.bwt",
         ref="ReferenceStrains/H37Rv.fasta",
-        fq1=f"{PROJECT_DIR}/FASTQ/{{sample}}_R1_001.fastq.gz",
-        fq2=f"{PROJECT_DIR}/FASTQ/{{sample}}_R2_001.fastq.gz",
+        fq1=f"FASTQ/{BATCH_FASTQ_DIR}/{{sample}}_R1_001.fastq.gz",
+        fq2=f"FASTQ/{BATCH_FASTQ_DIR}/{{sample}}_R2_001.fastq.gz",
     output:
         sam=temp("{sample}.sam")
     threads: 32
@@ -133,7 +134,7 @@ rule gatk_aorrg:
         bam=rules.samtools_sort.output.sbam,
         bai=rules.samtools_index_bam.output.bai
     output:
-        bam=f"{PROJECT_DIR}/BAM/{{sample}}.bam"
+        bam="BAM/{sample}.bam"
     resources:
         runtime=60
     log:
@@ -158,7 +159,7 @@ rule gatk_hc:
         bam=rules.gatk_aorrg.output.bam,
         ref="ReferenceStrains/H37Rv.fasta"
     output:
-        vcf=f"{PROJECT_DIR}/VCF/{{sample}}.vcf"
+        vcf="VCF/{sample}.vcf"
     threads: 32
     log:
         "slurm_logs/gatk_hc_{sample}.log"
@@ -178,7 +179,7 @@ rule samtools_flagstat:
     input:
         bam=rules.gatk_aorrg.output.bam,
     output:
-        fst=f"{PROJECT_DIR}/Stats/{{sample}}_flagstat.txt"
+        fst="Stats/{sample}_flagstat.txt"
     log:
         "slurm_logs/samtools_flagstat_{sample}.log"
     shell:
@@ -191,9 +192,9 @@ rule tb_profiler_profile:
     input:
         bam=rules.gatk_aorrg.output.bam,
     output:
-        tbp=f"{PROJECT_DIR}/TBProfiler/{{sample}}.results.json"
+        tbp="TBProfiler/{sample}.results.json"
     params:
-        fstem=f"{PROJECT_DIR}/TBProfiler/{{sample}}"
+        fstem="TBProfiler/{sample}"
     log:
         "slurm_logs/tb_profiler_profile_{sample}.log"
     shell:

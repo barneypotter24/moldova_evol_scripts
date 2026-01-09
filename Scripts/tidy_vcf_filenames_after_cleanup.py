@@ -21,5 +21,7 @@ if __name__ == "__main__":
             print(f"Renaming {vcf_dir}/{fname} to {new_fname}")
             # os.rename(f"{vcf_dir}/{fname}", new_fname)
             rename_count += 1
+        else:
+            print(f"Skipping file without lane info: {fname}")
 
     print(f"Total files renamed: {rename_count}")

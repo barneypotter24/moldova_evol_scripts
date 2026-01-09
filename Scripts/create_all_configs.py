@@ -13,6 +13,8 @@ if __name__ == "__main__":
     config_count = 0
     batch_samples = []
 
+    batch_sets = [] # for validation
+
     for b in range(nbatches):
         batch_dir = os.path.join(fastq_dir, f"{b}")
         print(f"Processing batch directory: {batch_dir}")
@@ -27,6 +29,7 @@ if __name__ == "__main__":
             sample = fname.split(sep)[0]
             b_seqs.add(sample)
         print (f"Found {len(b_seqs)} unique samples in batch {b}")
+        batch_sets.append(b_seqs)
 
 
         nest = [[]]
@@ -65,3 +68,12 @@ if __name__ == "__main__":
             config_index += 1
 
     print(f"Finished creating {config_index} config files.")
+
+    print("Validating batch sample sets...")
+    overlap = batch_sets[0] & batch_sets[1] & batch_sets[2] & batch_sets[3]
+    if len(overlap) > 0:
+        print("Warning: Overlapping samples found between batches:")
+        for s in overlap:
+            print(s)
+    else:
+        print("No overlapping samples found between batches.")

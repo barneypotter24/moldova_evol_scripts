@@ -57,7 +57,7 @@ if __name__ == "__main__":
             cfg_fname = f"{config_dir}/config{config_index}.yaml"
             print("Creating config file:", cfg_fname)
             with open(cfg_fname, "w") as o:
-                o.write(f"batch: {i}\n")
+                o.write(f"batch: \"{i}\"\n")
                 o.write("samples:\n")
                 for k, s in enumerate(samps):
                     line = f"    {k}: \"{s}\"\n"

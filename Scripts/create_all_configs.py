@@ -22,10 +22,10 @@ if __name__ == "__main__":
         for fname in os.listdir(batch_dir):
             fname = fname.strip("\n")  # remove newline characters
             if fname.endswith(".fastq.gz"):
-                if "_L00" in fname:
-                    sep = "_L00"
+                if "_R1_" in fname:
+                    sep = "_R1_"
                 else:
-                    sep = "_R"
+                    sep = "_R1"
             sample = fname.split(sep)[0]
             b_seqs.add(sample)
         print (f"Found {len(b_seqs)} unique samples in batch {b}")

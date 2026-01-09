@@ -5,7 +5,6 @@ Main Snakefile for alignment of FASTQs for moldova_evol.
 
 BATCH_FASTQ_DIR = config["batch"]
 print(f"BATCH_FASTQ_DIR: {BATCH_FASTQ_DIR}")
-sys.exit()
 SAMPLES_TO_RUN = list(config["samples"].values())
 print(SAMPLES_TO_RUN)
 

@@ -18,9 +18,9 @@ if __name__ == "__main__":
             fbase = fname.split(sep)[0]
             new_fname = f"{vcf_dir}/{fbase}{extension}"
             print(f"Renaming {vcf_dir}/{fname} to {new_fname}")
-            # os.rename(f"{vcf_dir}/{fname}", new_fname)
+            os.rename(f"{vcf_dir}/{fname}", new_fname)
             rename_count += 1
         else:
-            print(f"Skipping file without lane info: {fname}")
+            print(f"Skipping file without _f ta: {fname}")
 
     print(f"Total files renamed: {rename_count}")

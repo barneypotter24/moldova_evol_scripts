@@ -9,3 +9,9 @@ SNP_alignment/
 ReferenceStrains/
 tbdb/
 slurm_logs/
+SNP_alignment/
+out_err/
+*.fasta
+*.vcf
+Scripts/01092026*
+.snakemake/

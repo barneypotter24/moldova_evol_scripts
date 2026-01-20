@@ -9,7 +9,6 @@ SNP_alignment/
 ReferenceStrains/
 tbdb/
 slurm_logs/
-SNP_alignment/
 out_err/
 *.fasta
 *.vcf
